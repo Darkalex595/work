@@ -1,0 +1,22 @@
+TODO EN INGLES PROGRAMACION Y BASE DE DATOS
+
+1er paso: Crear base de datos
+2do paso: Modelo de divison geografica de estados unidos, 42 propiedades por pagina y 
+	  aproximado de 200 paginas por resultado de  busqueda haciendo una descarga de 8400.
+	  Division: Estado, Condado, Ciudad/Pueblos o Zip Codes
+3er paso: Crear tabla Estados
+4to paso: Crear tabla condado con ID de estado
+5to paso: Crear la base de datos basado en los datos que se necesitan 
+	  (Crar una tabla de propiedades usadas y otra tabla de propiedades nuevas)
+	  (Tabla de popiedades_nueva_unit)
+	  (Tabla propiedades_renta)
+
+
+Saltarse el bloqueo:
+ - Crear un header usando el agent, referer y cookie
+ - Extraer la cookie es lo importante
+ - Opcion es usar selenium
+
+Crear un parser para nuevo y un parser para usados
+Crear un item nuevos y crear usados
+

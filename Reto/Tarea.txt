@@ -1,0 +1,15 @@
+usar funcion format para la construccion de urls usando la url base
+Aprender a usar a docker
+Usar xpath para scrapear datos
+SIempre scrapear desde el detalle y no la pagina de la lista
+
+Tarea:
+Aprender docker
+Obtener las primeras 10 páginas de proopiedades usadas de cualquier comuna
+Nombre
+Precio
+Caracteristicas: Todas
+Descripcion
+Vendedor (Informacion de la tienda)
+Codigo de la propiedad
+Latitud y Longitud

@@ -1,0 +1,2 @@
+Usar selenium para sacar la cookie para usarlo en el request
+La cookie es del primer document que salga
