@@ -75,9 +75,9 @@ USER_AGENTS = ["Mozilla/5.0 (Windows NT 6.1; WOW64; rv:39.0) Gecko/20100101 Fire
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-#ITEM_PIPELINES = {
-#    'Realtor.pipelines.RealtorPipeline': 300,
-#}
+ITEM_PIPELINES = {
+   'Realtor.pipelines.RealtorPipeline': 300,
+}
 
 # # Enable and configure the AutoThrottle extension (disabled by default)
 # # See https://docs.scrapy.org/en/latest/topics/autothrottle.html

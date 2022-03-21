@@ -2,49 +2,66 @@ from email import header
 from types import CoroutineType
 import scrapy
 from Realtor.url import BASE_URL
-from Realtor.constants import type_search, Counties, URL,cookies
-import time
+from Realtor.constants import type_search, URL,cookies
 import json
-from Realtor.utils import getUseState, getAddress, getTotalBaths, getCode, determine_city
+from Realtor.utils import getUseState, getAddress, getTotalBaths, getCode, determine_city, getTypeSearch, getBuildType, transformLink
 import random
+import sys
+from Realtor.publications_item import PublicationItem
 
 class RealtorSpider(scrapy.Spider):
     
     ### Scraper name
     name = "Realtor"
+    #################
     
-    def create_URL(self, State_selected, county_selected, city_selected):
+    ### ID of the country (USA = 4)
+    country_id = 4
+    ##############################
+    
+#############################################################################################   
+### Function that creates URL depending of the input of the user
+    def create_URL(self):
         
+        ### Array where created URLs will be stored
         urls = []
         
+        ## Variables for testing purposes
+        # search_aux = "rental"
+        # state = "Florida"
+        # county_aux = "Miami"
+        # city_aux = "Miami-Beach"
+        # prop_type_aux = "apartment"
+        # self.type = "apartment"
+        # self.search = "rental"
+        ###########################
         
-        ## Lineas temporales ya que el tipo de busqueda y el estado deben ser definidos por el usuario
-        search = type_search[0]
-        state = "Florida"
-        county_aux = "Miami"
-        city_aux = "Miami Beach"
+        ### Input of the user to specify what the spider will search
+        search_aux = self.search
+        state = self.state
+        county_aux = self.county
+        city_aux = self.city
+        prop_type_aux = self.type
         ########
-          
+        
+        
+        search_2 =  getTypeSearch(search_aux) 
         cities = determine_city(state, county_aux, city_aux)
         state_code = getCode(state)
+        self.prop_type = getBuildType(prop_type_aux)
         
         if len(cities) == 1:
-            urls.append(BASE_URL.format(search = search, city = cities[0], code = state_code))
+            urls.append(BASE_URL.format(search = search_2, city = cities[0], code = state_code, type = self.prop_type))
         elif len(cities) > 1:
             for city in cities:
-                urls.append(BASE_URL.format(search = search, city = city, code = state_code))
+                urls.append(BASE_URL.format(search = search_2, city = city, code = state_code, type=self.prop_type))
         else:
-            print("No hay ciudades")
-            quit()
-        
-        # for county in aux_counties:
-        #     for city in county["Cities"]:
-        #         urls.append(BASE_URL.format(search = search, city = city, code = county["Code"]))
-        
-        
-            
+            sys.exit("City not available")
+                   
         return urls
 
+#############################################################################################     
+### Function that starts the requests based on the list of URLs created
         
     def start_requests(self):
         header = {
@@ -54,25 +71,23 @@ class RealtorSpider(scrapy.Spider):
         "cookie": random.choice(cookies)
         } 
         
-        State = "Florida"
-        County = "Miami"
-        city = "all"  
-        urls = self.create_URL(State, County, city)
+        
+        urls = self.create_URL()
+        
         
         print("URLS:",urls)
         
-        #Pagina de lista
-        # urls = ["https://www.realtor.com/realestateandhomes-search/Miami-Beach_FL"]
-        # urls = ["https://www.realtor.com/apartments/Miami-Beach_FL/type-single-family-home"]
+        if self.search == "rental":
+            for url in urls:
+                # print("I'm in ", url)
+                yield scrapy.Request(url=url, callback=self.parse_rent, headers=header)
         
-        #Pagina de propiedad
-        # urls = ["https://www.realtor.com/realestateandhomes-detail/90-Alton-Rd-Apt-2207_Miami-Beach_FL_33139_M59625-32159?property_id=5962532159&from=ab_mixed_view_card"]
-        
-        # print(urls)   
-
-        for url in urls:
-            # print("I'm in ", url)
-            yield scrapy.Request(url=url, callback=self.parse_buy, headers=header)
+        elif self.search == "buy":
+            for url in urls:
+                # print("I'm in ", url)
+                yield scrapy.Request(url=url, callback=self.parse_buy, headers=header)
+        else:
+            print("Type of search not available")
    
    
 ###############################################################################################           
@@ -82,9 +97,21 @@ class RealtorSpider(scrapy.Spider):
     def parse_buy(self, response):
         links = response.css('a.jsx-1534613990.card-anchor::attr(href)').getall()
        
-        # for link in links:  
-        #     # print(URL+link)
-        #     yield response.follow(URL+link, callback=self.parse_buy_prop)
+        for link in links:  
+            # print(URL+link)
+            yield response.follow(URL+link, callback=self.parse_buy_prop)
+        
+        # button_array = response.css('a.item.btn::attr(href)').getall()
+        
+            
+        # tam_array = len(button_array)
+        # next_link = button_array[tam_array-1]
+        
+        # if next_link != "":
+        #     next_link = transformLink(next_link, self.prop_type)
+        #     yield response.follow(URL+next_link, callback=self.parse_rent)
+        # else:
+        #     print("End of catalogue")
 
 
 ###############################################################################################
@@ -278,28 +305,33 @@ class RealtorSpider(scrapy.Spider):
             print("Real State office not found")        
         
             
-        print("Id de Propiedad:", property_id)
-        print("Id de la publicacion:", list_id)
-        print("Fecha de ultima publicacion:", list_date)
-        print("URL:", url)
-        print("Precio:", price)
-        print('Camas:', beds)
-        print("Studio:", Studio)
-        print('Baños:', bathroom)
-        print("Baños con ducha:", full_bath)
-        print("Estacionamientos:", garage)
-        print('Area:', area)
-        print('Area total:', area_tot)
-        print('Direccion:', address)
-        print("Latitud:", latitude)
-        print("Longitud:", longitude)
-        print("Estado:", use_state)
-        print("Agente:", agent)
-        print("Office", office)
-        print("Año de Construccion:", year_built)
+        # print("Id de Propiedad:", property_id)
+        # print("Id de la publicacion:", list_id)
+        # print("Fecha de ultima publicacion:", list_date)
+        # print("URL:", url)
+        # print("Precio:", price)
+        # print('Camas:', beds)
+        # print("Studio:", Studio)
+        # print('Baños:', bathroom)
+        # print("Baños con ducha:", full_bath)
+        # print("Estacionamientos:", garage)
+        # print('Area:', area)
+        # print('Area total:', area_tot)
+        # print('Direccion:', address)
+        # print("Latitud:", latitude)
+        # print("Longitud:", longitude)
+        # print("Estado:", use_state)
+        # print("Agente:", agent)
+        # print("Office", office)
+        # print("Año de Construccion:", year_built)
+        
+        
+        item = PublicationItem(prov_id= None, id_publication_scraper= None, id_publication_provider= None, publication_code= list_id, project_code= property_id, unit_code= None, unit_name= unit, country_id= self.country_id, id_admin_zone= None, name= None, address= address, description= description, publication_link= url, property_type= self.type, use_state= use_state, transaction_type= self.search, bedrooms= beds, bathrooms= bathroom, floors= stories, garage= garage, warehouse= None, furnished= None, util_area= area, terrace_area= None, total_area= area_tot, warehouse_price= None, garage_price= None, total_price= price, currency_type= "USD", publication_date= None, email= None, phone= agent_phone, seller_id= agent_id, seller= agent, real_state_name= office, construction_company= None, delivery_range= None, delivery_year= None, delivery_month= None, latitude= latitude, longitude= longitude, add_date= list_date, updated_date= None, studio= Studio, full_baths= full_bath, source_total_price= None, state_list= None, build_year= year_built, build_year_detail=None)
+        
+        yield item
         
         ### Jumps of line to distinguish between properties
-        print("\n")
+        # print("\n")
 
         # print(list_desc)
 
@@ -314,12 +346,26 @@ class RealtorSpider(scrapy.Spider):
 # Parse function that extracts the links in the property catalogue from 
 # properties on rent and calls the specific parse function to enter 
 # each property and extract the information
+
     def parse_rent(self, response):
         links = response.css('a.card-anchor::attr(href)').getall()
        
         for link in links:  
             # print(URL+link)
             yield response.follow(URL+link, callback=self.parse_rent_prop)
+            
+        button_array = response.css('a.item.btn::attr(href)').getall()
+        
+        
+        # tam_array = len(button_array)
+        # next_link = button_array[tam_array-1]
+        
+        # if next_link != "":
+        #     next_link = transformLink(next_link, self.prop_type)
+        #     yield response.follow(URL+next_link, callback=self.parse_rent)
+        # else:
+        #     print("End of catalogue")
+        
         
 ###############################################################################################
 ### Parse method for properties on rent for apartments 
@@ -415,6 +461,11 @@ class RealtorSpider(scrapy.Spider):
             print("Office not available")
         
         
+        ### Ultima actualizacion
+        update = Data["props"]["pageProps"]["property"]["last_update_date"]
+        if update == None:
+            print("Last update date not available")
+        
         
         units = Data["props"]["pageProps"]["property"]["description"]["units"]
         
@@ -424,62 +475,73 @@ class RealtorSpider(scrapy.Spider):
             list_units = Data["props"]["pageProps"]["property"]["units"]
 
             ### Get number of bedrooms, util area, of all units
-            for unit in list_units:
-                Studio = False
-                
-                ### Get unit name
-                names = unit["description"]["name"]
-                if names == None:
-                    print("Unit name not available")       
-                
-                
-                ### Get number of bedrooms
-                beds_unit = unit["description"]["beds"]
-                if beds_unit == None:
-                    print("Number of bedrooms not available")
+            if list_units != None:
+                for unit in list_units:
+                    Studio = False
+                    
+                    ### Get unit name
+                    names = unit["description"]["name"]
+                    if names == None:
+                        print("Unit name not available")       
+                    
+                    
+                    ### Get unit id
+                    unit_id = unit["plan_id"]
+                    if unit_id == None:
+                        print("Unit id not available")
+                    
+                    ### Get number of bedrooms
+                    beds_unit = unit["description"]["beds"]
+                    if beds_unit == None:
+                        print("Number of bedrooms not available")
+                    else:
+                        if beds_unit <= 0:
+                            beds_unit = 1
+                            Studio = True          
+                    
+                    
+                    ### Get area of the unit
+                    areas_unit = unit["description"]["sqft"]
+                    if areas_unit == None:
+                        print("Area of unit not available")
+                    
+                    
+                    ### Get bathrooms
+                    full_baths_unit = unit["description"]["baths"]
+                    if full_baths_unit == None:
+                        print("Full bathrooms not available")
+                    
+                    half_baths_unit = unit["description"]["baths_half"]
+                    if half_baths_unit == None:
+                        print("Half bathrooms not available")
+                        
+                    baths = getTotalBaths(full_baths_unit, half_baths_unit)
+                    
+                    
+                    ### Get units description
+                    descriptions = unit["description"]["text"]
+                    if descriptions == None:
+                        print("Description not available")
+                        
+                    
+                    ### Get prices of units
+                    prices = unit["list_price"]
+                    
+                    # print("Nombre de la unidad:", names)
+                    # print("Numero de dormitorios:", beds_unit)
+                    # print("Area del departamento:", areas_unit)
+                    # print("Baños con ducha:", full_baths_unit)
+                    # print("Baños sin ducha:", half_baths_unit)
+                    # print("Descripcion:", descriptions)
+                    # print("Precio:", prices)
+                    # print("Direccion:", address)
+                    # print("Latitud:", latitude)
+                    # print("Longitude:", longitude)
+                    item = PublicationItem(prov_id= None, id_publication_scraper= None, id_publication_provider= None, publication_code= list_id, project_code= property_id, unit_code= unit_id, unit_name= names, country_id= self.country_id, id_admin_zone= None, name= None, address= address, description= descriptions, publication_link= url, property_type= self.type, use_state= None, transaction_type= self.search, bedrooms= beds_unit, bathrooms= baths, floors= stories, garage= None, warehouse= None, furnished= None, util_area= areas_unit, terrace_area= None, total_area= None, warehouse_price= None, garage_price= None, total_price= prices, currency_type= "USD", publication_date= None, email= None, phone= None, seller_id= None, seller= agent, real_state_name= office, construction_company= None, delivery_range= None, delivery_year= None, delivery_month= None, latitude= latitude, longitude= longitude, add_date= None, updated_date= update, studio= Studio, full_baths= full_baths_unit, source_total_price= None, state_list= None, build_year= year_built, build_year_detail=None)
+            
+                    yield item
                 else:
-                    if beds_unit <= 0:
-                        beds_unit = 1
-                        Studio = True          
-                
-                
-                ### Get area of the unit
-                areas_unit = unit["description"]["sqft"]
-                if areas_unit == None:
-                    print("Area of unit not available")
-                
-                
-                ### Get bathrooms
-                full_baths_unit = unit["description"]["baths"]
-                if full_baths_unit == None:
-                    print("Full bathrooms not available")
-                
-                half_baths_unit = unit["description"]["baths_half"]
-                if half_baths_unit == None:
-                    print("Half bathrooms not available")
-                    
-                baths = getTotalBaths(full_baths_unit, half_baths_unit)
-                
-                
-                ### Get units description
-                descriptions = unit["description"]["text"]
-                if descriptions == None:
-                    print("Description not available")
-                    
-                
-                ### Get prices of units
-                prices = unit["list_price"]
-                
-                print("Nombre de la unidad:", names)
-                print("Numero de dormitorios:", beds_unit)
-                print("Area del departamento:", areas_unit)
-                print("Baños con ducha:", full_baths_unit)
-                print("Baños sin ducha:", half_baths_unit)
-                print("Descripcion:", descriptions)
-                print("Precio:", prices)
-                print("Direccion:", address)
-                print("Latitud:", latitude)
-                print("Longitude:", longitude)
+                    print("List of units not available")
                 
     ########################################################
     ### Apartamentos sin unidades o demas tipo de propiedades            
@@ -545,161 +607,24 @@ class RealtorSpider(scrapy.Spider):
                 description = "N/A"
                 print("Description not available")
             
-            print("Dormitorios:", beds)
-            print("Baños:", bathroom)
-            print("Garage:", garage)
-            print("Precio:", price)
-            print("Direccion:", address)
-            print("Area Util:", area)
-            print("Area Total:", area_tot)
-            print("Longitud:", longitude)
-            print("Latitude:", latitude)
-            print("Agente:", agent)
-            print("Oficina:", office)
-            print("Description:", description)
-            print("Estudio:", Studio)
+            # print("Dormitorios:", beds)
+            # print("Baños:", bathroom)
+            # print("Garage:", garage)
+            # print("Precio:", price)
+            # print("Direccion:", address)
+            # print("Area Util:", area)
+            # print("Area Total:", area_tot)
+            # print("Longitud:", longitude)
+            # print("Latitude:", latitude)
+            # print("Agente:", agent)
+            # print("Oficina:", office)
+            # print("Description:", description)
+            # print("Estudio:", Studio)
             
-            print("\n")
+            # print("\n")
             
-
-
-
-
-###############################################################################################
-### Parse method for properties on rent except for apartment  
-    # def parse_rent_rest(self, response):
-    #     print("\n")
+            item = PublicationItem(prov_id= None, id_publication_scraper= None, id_publication_provider= None, publication_code= list_id, project_code= property_id, unit_code= None, unit_name= unit, country_id= self.country_id, id_admin_zone= None, name= None, address= address, description= description, publication_link= url, property_type= self.type, use_state= None, transaction_type= self.search, bedrooms= beds, bathrooms= bathroom, floors= stories, garage= garage, warehouse= None, furnished= None, util_area= area, terrace_area= None, total_area= area_tot, warehouse_price= None, garage_price= None, total_price= price, currency_type= "USD", publication_date= None, email= None, phone= None, seller_id= None, seller= agent, real_state_name= office, construction_company= None, delivery_range= None, delivery_year= None, delivery_month= None, latitude= latitude, longitude= longitude, add_date= None, updated_date= update, studio= Studio, full_baths= full_bath, source_total_price= None, state_list= None, build_year= year_built, build_year_detail=None)
         
-    #     # transaction = "Rent"
-        
-    #     Data = response.xpath('//*[@id="__NEXT_DATA__"]/text()').get()
-    #     Data = json.loads(Data)
-        
-    #     ### Get address
-    #     street_name = Data["props"]["pageProps"]["property"]["location"]["address"]["street_name"]
-    #     street_number = Data["props"]["pageProps"]["property"]["location"]["address"]["street_number"]
-    #     postal_code = Data["props"]["pageProps"]["property"]["location"]["address"]["postal_code"]
-        
-    #     address = getAddress(street_name, street_number, postal_code)
-        
-    #     ###Get number of bedrooms
-    #     beds = Data["props"]["pageProps"]["property"]["description"]["beds"]
-    #     Studio = False
-        
-    #     if beds != None:
-    #         if beds == 0:
-    #             beds = 1
-    #             Studio = True
-    #     else:
-    #         print("Number of beds not available")
-        
-        
-    #     ###Get number of bathrooms
-    #     baths = Data["props"]["pageProps"]["property"]["description"]["baths"]
-    #     if baths == None:
-    #         print("Number of bathrooms not available")
-
-    #     baths_full = Data["props"]["pageProps"]["property"]["description"]["baths_full"]
-    #     if baths_full == None:
-    #         print("Number of full bathrooms not available")
-        
-    #     baths_half = Data["props"]["pageProps"]["property"]["description"]["baths_half"]
-    #     if baths_half == None:
-    #         print("Number of half bathrooms not available")
-        
-            
-    #     ###Get number of parking spaces
-    #     garage = Data["props"]["pageProps"]["property"]["description"]["garage"]
-    #     if garage == None:
-    #         print("Number of parking spaces not available")
+            yield item
             
             
-    #     ###Get price of rent a month
-    #     price = Data["props"]["pageProps"]["property"]["list_price"]
-    #     if price != None:
-    #         price = str(price)
-    #     else:
-    #         price = "N/A"
-    #         print("Price per month not available")
-        
-            
-    #     ###Get useful area and total area
-    #     area = Data["props"]["pageProps"]["property"]["description"]["sqft"]
-        
-    #     if area != None:
-    #         area = str(area)
-    #     else:
-    #         area = "N/A"
-    #         print("Useful area not available")
-        
-    #     area_tot = Data["props"]["pageProps"]["property"]["description"]["lot_sqft"]
-        
-    #     if area != None:
-    #         area = str(area_tot)
-    #     else:
-    #         area = "N/A"
-    #         print("Total area not available")
-            
-            
-    #     ### Get property coordinates
-    #     coordinates = Data["props"]["pageProps"]["property"]["location"]["address"]["coordinate"]
-        
-    #     if coordinates != None:
-            
-    #         latitude = Data["props"]["pageProps"]["property"]["location"]["address"]["coordinate"]["lat"]
-            
-    #         if latitude != None:
-    #             latitude = str(latitude)
-    #         else:
-    #             latitude = "N/A"
-    #             print("Latitude not available")
-            
-    #         longitude = Data["props"]["pageProps"]["property"]["location"]["address"]["coordinate"]["lon"]
-            
-    #         if longitude != None:
-    #             longitude = str(longitude)
-    #         else:
-    #             longitude = "N/A"
-    #             print("Longitude not available")
-    #     else:
-    #         coordinates = "N/A"
-    #         print("Coordinates not available")
-            
-            
-    #     ### Get real state agent and office
-    #     agent = Data["props"]["pageProps"]["property"]["advertisers"][0]["name"]
-        
-    #     if agent == None or agent == "":
-    #         agent = "N/A"
-    #         print("Agent not available")
-        
-    #     office = Data["props"]["pageProps"]["property"]["advertisers"][0]["office"]["name"]
-        
-    #     if office == None or office == "":
-    #         office = "N/A"
-    #         print("Office not available")
-        
-        
-    #     ### Get property description
-    #     description = Data["props"]["pageProps"]["property"]["description"]["text"]
-        
-    #     if description == None:
-    #         description = "N/A"
-    #         print("Description not available")
-        
-    #     print("Dormitorios:", beds)
-    #     print("Baños:", baths)
-    #     print("Garage:", garage)
-    #     print("Precio:", price)
-    #     print("Direccion:", address)
-    #     print("Area Util:", area)
-    #     print("Area Total:", area_tot)
-    #     print("Longitud:", longitude)
-    #     print("Latitude:", latitude)
-    #     print("Agente:", agent)
-    #     print("Oficina:", office)
-    #     print("Description")
-        
-    #     print("\n")
-        
-        # transaction = "Rent"

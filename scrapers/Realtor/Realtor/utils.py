@@ -1,10 +1,37 @@
 from audioop import add
-from Realtor.constants import States
+from Realtor.constants import States, type_search
+import sys
 
 def transform_city(city):
     aux_city = city.replace(" ", "-")
     return aux_city
 
+def transformLink(link, type_build):
+    position = link.find("/pg")
+    
+    return link[:position] + "/" + "type-" + type_build + link[position:]
+
+def getTypeSearch(search):
+    
+    if search.find("rental") != -1:
+        return type_search[1]
+    elif search.find("buy") != -1:
+        return type_search[0]
+    else:
+        sys.exit("Type of search not available")
+
+def getBuildType(search):
+    
+    if search.find("condo") != -1:
+        return "condo"
+    elif search.find("apartment") != -1:
+        return "apartments"
+    else:
+        sys.exit("Type of building not available")
+        
+    
+        
+        
 # Function to determine which state needs to be scrape
 def determine_city(selected_state, selected_county,selected_city):
 
@@ -34,28 +61,28 @@ def determine_city(selected_state, selected_county,selected_city):
             
             if selected_city == "all":
                 for city in cities:
-                    aux_city.append(transform_city(city))
+                    aux_city.append(city)
                 
                 if len(aux_city) > 0:
                     return aux_city
                 else:
-                    print("Cities not available")
+                    sys.exit("Cities not available")
             else:
                 for city in cities:
                     if city == selected_city:
-                        aux_city.append(transform_city(city))
+                        aux_city.append(city)
                         break
                 
                 if len(aux_city) > 0:
                     return aux_city
                 else:
-                    print("City not available")
+                    sys.exit("City not available")
             
         else:
-            print("County not available")
+            sys.exit("County not available")
         
     else:
-        print("State not available")  
+        sys.exit("State not available") 
     
     return aux_city
 

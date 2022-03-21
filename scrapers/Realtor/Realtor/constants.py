@@ -11,20 +11,12 @@ States = [
         "Counties": [
             {
                 "County": "Miami",
-                "Cities": ["Miami", "Homestead", "Florida City", "Miami Beach", "Coral Gables", "Hialeah", "North Miami", "Opa-locka", "Miami Springs", "South Miami", "Golden Beach", "North Miami Beach", "Miami Shores", "Biscayne Park", "Surfside", "El Portal", "Indian Creek Village", "West Miami", "Bay Harbor Islands", "Bay Harbour", "Virginia Gardens", "Hialeah Gardens", "Medley", "Key Biscayne", "Aventura", "Pinecrest", "Sunny Isles Beach", "Miami Lakes", "Palmeto Bay", "Miami Gardens", "Doral", "Cutler Bay"]
+                "Cities": ["Miami", "Homestead", "Florida-City", "Miami-Beach", "Coral-Gables", "Hialeah", "North-Miami", "Opa-locka", "Miami-Springs", "South-Miami", "Golden-Beach", "North-Miami-Beach", "Miami-Shores", "Biscayne-Park", "Surfside", "El-Portal", "Indian-Creek-Village", "West-Miami", "Bay-Harbor-Islands", "Bay-Harbour", "Virginia-Gardens", "Hialeah-Gardens", "Medley", "Key-Biscayne", "Aventura", "Pinecrest", "Sunny-Isles-Beach", "Miami-Lakes", "Palmeto-Bay", "Miami-Gardens", "Doral", "Cutler-Bay"]
             }
         ]
     }
 ]
 
-## Array of dcitionaries of each county
-Counties = [
-    {
-    "County": "Miami",
-    "State": "Florida",
-    "Cities": ["Miami", "Homestead", "Florida City", "Miami Beach", "Coral Gables", "Hialeah", "North Miami", "Opa-locka", "Miami Springs", "South Miami", "Golden Beach", "North Miami Beach", "Miami Shores", "Biscayne Park", "Surfside", "El Portal", "Indian Creek Village", "West Miami", "Bay Harbor Islands", "Bay Harbour", "Virginia Gardens", "Hialeah Gardens", "Medley", "Key Biscayne", "Aventura", "Pinecrest", "Sunny Isles Beach", "Miami Lakes", "Palmeto Bay", "Miami Gardens", "Doral", "Cutler Bay"]
-    }
-]
 
 URL = "https://www.realtor.com"
 
