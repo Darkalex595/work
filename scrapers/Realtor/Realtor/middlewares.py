@@ -3,7 +3,10 @@
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
+import imp
 from scrapy import signals
+import base64
+from Realtor.constants import PROXIES, PROXY_PASSWORD, PROXY_USER
 
 # useful for handling different item types with a single interface
 from itemadapter import is_item, ItemAdapter
@@ -101,3 +104,4 @@ class RealtorDownloaderMiddleware:
 
     def spider_opened(self, spider):
         spider.logger.info('Spider opened: %s' % spider.name)
+

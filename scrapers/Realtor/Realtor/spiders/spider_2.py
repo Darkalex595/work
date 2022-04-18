@@ -11,158 +11,12 @@ from Realtor.publications_item import PublicationItem
 import random
 import base64
 
-
 class RealtorSpider(scrapy.Spider):
     
-    ### Scraper name
-    name = "Realtor"
-    #################
-    
-    properties = []
-    referers = []
-    actual_link = ""
-    
-#############################################################################################   
-### Function that creates URL depending of the input of the user
-    def create_URL(self):
-        
-        ### Array where created URLs will be stored
-        urls = []
-        
-        ## Variables for testing purposes
-        # search_aux = "rental"
-        # state = "Florida"
-        # county_aux = "Miami"
-        # city_aux = "Miami-Beach"
-        # prop_type_aux = "apartment"
-        # self.type = "apartment"
-        # self.search = "rental"
-        ###########################
-        
-        ### Input of the user to specify what the spider will search
-        search_aux = self.search
-        state = self.state
-        county_aux = self.county
-        city_aux = self.city
-        prop_type_aux = self.type
-        ########
-        
-        
-        search_2 =  getTypeSearch(search_aux) 
-        cities = determine_city(state, county_aux, city_aux)
-        state_code = getCode(state)
-        self.prop_type = getBuildType(prop_type_aux)
-        
-        if len(cities) == 1:
-            urls.append(BASE_URL.format(search = search_2, city = cities[0], code = state_code, type = self.prop_type))
-        elif len(cities) > 1:
-            for city in cities:
-                urls.append(BASE_URL.format(search = search_2, city = city, code = state_code, type=self.prop_type))
-        else:
-            sys.exit("City not available")
-                   
-        return urls
-
-#############################################################################################     
-### Function that starts the requests based on the list of URLs created
-        
     def start_requests(self):
-        
-        # proxy_user_pass = PROXY_USER + ":" + PROXY_PASSWORD
-        # encoded_user_pass = base64.b64encode(proxy_user_pass.encode())
-        # self.proxy_authorization = 'Basic ' + encoded_user_pass.decode()
-        
-        self.header = {
-        "authority": "www.realtor.com",
-        "path" : "/realestateandhomes-search/Miami-Beach_FL",
-        "scheme": "https",
-        "accept-encoding": "gzip, deflate, br",
-        "accept-language":"es-ES,es;q=0.9",
-        "referer": "https://www.realtor.com/",
-        "cookie": random.choice(cookies),
-        
-        # 'Proxy-Authorization': self.proxy_authorization
-        } 
-        
-        
-        urls = self.create_URL()
-        
-        
-        print("URLS:",urls)
-        
-        if self.search == "rental":
-            for url in urls:
-                self.header["path"] = url
-                # print("I'm in ", url)
-                self.actual_link = url
-                yield scrapy.Request(url=url, callback=self.parse_rent, headers=self.header)
-                
-                
-                
-                
-        
-        elif self.search == "buy":
-            for url in urls:
-                self.header["path"] = url
-                # print("I'm in ", url)
-                self.actual_link = url
-                yield scrapy.Request(url=url, callback=self.parse_buy, headers=self.header)
+        with open('listfile.txt', 'r') as f:
+            links = f.readlines()
 
-                
-                
-        else:
-            print("Type of search not available")
-   
-
-
-###############################################################################################           
-# Parse function that extracts the links in the property catalogue from 
-# properties on sale and calls the specific parse function to enter 
-# each property and extract the information
-    def parse_buy(self, response):
-        links = response.css('a.jsx-1534613990.card-anchor::attr(href)').getall()
-       
-        self.referers.append(self.actual_link)
-       
-        for link in links:  
-            # print("Link:", URL+link)
-            # self.header["cookie"] = random.choice(cookies)
-            # yield scrapy.Request(url= URL+link, callback=self.parse_buy_prop, headers=self.header)
-            self.properties.append(URL+link)
-        
-        button_array = response.css('a.item.btn::attr(href)').getall()
-        
-            
-        tam_array = len(button_array)
-        next_link = button_array[tam_array-1]
-        
-        # print("Tamaño del array:", tam_array)
-        
-        if next_link != "":
-            next_link = transformLink(next_link, self.prop_type)
-            self.header["cookie"] = random.choice(cookies)
-            self.header["referer"] = self.actual_link
-            self.actual_link = URL+next_link
-            yield scrapy.Request(URL+next_link, callback=self.parse_buy, headers=self.header)
-        else:
-            print("End of catalogue")
-            
-        
-            # Cont = 0
-            # ref = 0
-                
-            # for props in self.properties:
-            #     self.header["cookie"] = random.choice(cookies)
-            #     if (Cont == 44):
-            #         Cont = 0
-            #         ref = ref + 1
-                            
-            #     self.header["referer"] = self.referers[ref]
-                        
-            #     yield scrapy.Request(url= props, callback=self.parse_buy_prop, headers=self.header)
-                        
-            #     Cont = Cont + 1
-                
 
 ###############################################################################################
 ### Parse method for properties on sale
@@ -379,72 +233,8 @@ class RealtorSpider(scrapy.Spider):
         item = PublicationItem(prov_id= None, id_publication_scraper= None, id_publication_provider= None, publication_code= list_id, project_code= property_id, unit_code= None, unit_name= unit, country_id= COUNTRY_ID, id_admin_zone= None, name= None, address= address, description= description, publication_link= url, property_type= self.type, use_state= use_state, transaction_type= self.search, bedrooms= beds, bathrooms= bathroom, floors= stories, garage= garage, warehouse= None, furnished= None, util_area= area, terrace_area= None, total_area= area_tot, warehouse_price= None, garage_price= None, total_price= price, currency_type= "USD", publication_date= None, email= None, phone= agent_phone, seller_id= agent_id, seller= agent, real_state_name= office, construction_company= None, delivery_range= None, delivery_year= None, delivery_month= None, latitude= latitude, longitude= longitude, add_date= list_date, updated_date= None, studio= Studio, full_baths= full_bath, source_total_price= None, state_list= None, build_year= year_built, build_year_detail=None)
         
         yield item
-        
-        ### Jumps of line to distinguish between properties
-        # print("\n")
-
-        # print(list_desc)
 
 
-
-
-
-
-
-        
-###############################################################################################           
-# Parse function that extracts the links in the property catalogue from 
-# properties on rent and calls the specific parse function to enter 
-# each property and extract the information
-
-    def parse_rent(self, response):
-        
-        
-        links = response.css('a.card-anchor::attr(href)').getall()
-        self.header["referer"] = self.actual_link
-       
-        for link in links:  
-            print(URL+link)
-            self.header["cookie"] = random.choice(cookies)
-            # yield scrapy.Request(url=URL+link, callback=self.parse_rent_prop, headers= self.header)
-            self.properties.append(URL+link)
-            
-        button_array = response.css('a.item.btn::attr(href)').getall()
-        
-        
-        tam_array = len(button_array)
-        next_link = button_array[tam_array-1]
-        
-        if next_link != "":
-            next_link = transformLink(next_link, self.prop_type)
-            self.header["cookie"] = random.choice(cookies)
-            self.actual_link =  URL+next_link
-            yield scrapy.Request(URL+next_link, callback=self.parse_rent, headers= self.header)
-        else:
-            print("End of catalogue")
-            with open('listfile.txt', 'w') as filehandle:
-                for props in self.properties:
-                    filehandle.write('%s\n' % props)
-            
-            
-            # print("\n")
-            # print("Empieza el scraping de propiedades")
-            # print("\n")
-            # Cont = 0
-            # ref = 0
-                
-            # for props in self.properties:
-            #     self.header["cookie"] = random.choice(cookies)
-            #     if (Cont == 44):
-            #         Cont = 0
-            #         ref = ref + 1
-                            
-            #     self.header["referer"] = self.referers[ref]
-                        
-            #     yield scrapy.Request(url=props, callback=self.parse_rent_prop, headers= self.header)
-                        
-            #     Cont = Cont + 1
-        
 ###############################################################################################
 ### Parse method for properties on rent for apartments 
     def parse_rent_prop(self, response):
@@ -707,5 +497,3 @@ class RealtorSpider(scrapy.Spider):
             item = PublicationItem(prov_id= None, id_publication_scraper= None, id_publication_provider= None, publication_code= list_id, project_code= property_id, unit_code= None, unit_name= unit, country_id= COUNTRY_ID, id_admin_zone= None, name= None, address= address, description= description, publication_link= url, property_type= self.type, use_state= None, transaction_type= self.search, bedrooms= beds, bathrooms= bathroom, floors= stories, garage= garage, warehouse= None, furnished= None, util_area= area, terrace_area= None, total_area= area_tot, warehouse_price= None, garage_price= None, total_price= price, currency_type= "USD", publication_date= None, email= None, phone= None, seller_id= None, seller= agent, real_state_name= office, construction_company= None, delivery_range= None, delivery_year= None, delivery_month= None, latitude= latitude, longitude= longitude, add_date= None, updated_date= update, studio= Studio, full_baths= full_bath, source_total_price= None, state_list= None, build_year= year_built, build_year_detail=None)
         
             yield item
-            
-            
