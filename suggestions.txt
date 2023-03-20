@@ -1,0 +1,6 @@
+Agregar mas user agents y rotar
+Agregar mas datos al header
+
+Pedir mas IPs de proxy 
+
+Sacar todos los links antes de ir de propiedad en propiedad

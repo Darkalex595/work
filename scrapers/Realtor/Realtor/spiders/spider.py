@@ -95,6 +95,7 @@ class RealtorSpider(scrapy.Spider):
                 self.header["path"] = url
                 # print("I'm in ", url)
                 self.actual_link = url
+                url ="http://api.scraperapi.com?api_key=ba844affc206c6e87fc7b475670e8235&url=" + url
                 yield scrapy.Request(url=url, callback=self.parse_rent, headers=self.header)
                 
                 
@@ -106,6 +107,7 @@ class RealtorSpider(scrapy.Spider):
                 self.header["path"] = url
                 # print("I'm in ", url)
                 self.actual_link = url
+                url ="http://api.scraperapi.com?api_key=ba844affc206c6e87fc7b475670e8235&url=" + url
                 yield scrapy.Request(url=url, callback=self.parse_buy, headers=self.header)
 
                 
@@ -180,7 +182,7 @@ class RealtorSpider(scrapy.Spider):
          
         ### Get property ID
         property_id = data["props"]["pageProps"]["property"]["property_id"]
-        if property_id == None:
+        if property_id == None: 
             print("Property ID not available")
              
         
@@ -412,19 +414,18 @@ class RealtorSpider(scrapy.Spider):
         button_array = response.css('a.item.btn::attr(href)').getall()
         
         
-        tam_array = len(button_array)
-        next_link = button_array[tam_array-1]
+        # tam_array = len(button_array)
+        # next_link = button_array[tam_array-1]
         
-        if next_link != "":
-            next_link = transformLink(next_link, self.prop_type)
-            self.header["cookie"] = random.choice(cookies)
-            self.actual_link =  URL+next_link
-            yield scrapy.Request(URL+next_link, callback=self.parse_rent, headers= self.header)
-        else:
-            print("End of catalogue")
-            with open('listfile.txt', 'w') as filehandle:
-                for props in self.properties:
-                    filehandle.write('%s\n' % props)
+        # if next_link != "":
+        #     next_link = transformLink(next_link, self.prop_type)
+        #     self.header["cookie"] = random.choice(cookies)
+        #     self.actual_link =  URL+next_link
+        #     # mod_url = "http://api.scraperapi.com?api_key=ba844affc206c6e87fc7b475670e8235&url="+URL+next_link
+        #     yield scrapy.Request(URL+next_link, callback=self.parse_rent, headers= self.header)
+        # else:
+        #     print("End of catalogue")
+             
             
             
             # print("\n")
@@ -439,7 +440,7 @@ class RealtorSpider(scrapy.Spider):
             #         Cont = 0
             #         ref = ref + 1
                             
-            #     self.header["referer"] = self.referers[ref]
+            #     # self.header["referer"] = self.referers[ref]
                         
             #     yield scrapy.Request(url=props, callback=self.parse_rent_prop, headers= self.header)
                         
@@ -663,12 +664,13 @@ class RealtorSpider(scrapy.Spider):
             
                 
             ###Get price of rent a month
-            price = Data["props"]["pageProps"]["property"]["list_price"]
-            if price != None:
-                price = str(price)
-            else:
-                price = "N/A"
-                print("Price per month not available")
+            price = None
+            # price = Data["props"]["pageProps"]["property"]["list_price"]
+            # if price != None:
+            #     price = str(price)
+            # else:
+            #     price = "N/A"
+            #     print("Price per month not available")
             
                 
             ###Get useful area and total area
