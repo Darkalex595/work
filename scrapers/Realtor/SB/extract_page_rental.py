@@ -5,11 +5,12 @@ from const import BASE_URL
 from extract_json_rental import extract
 import time
 
-client = ScrapingBeeClient(api_key='PNTT41IH5YFQ8XVTGE6JB97H35SXIXW4KWX2D5C566PXW3FTB8Y0TIQXPZ92TC8164PMZRZHE81WHXOH')
+client = ScrapingBeeClient(api_key='TFVQC5OR0YFSAZDPT1OFZMFO5BIIW72VRXXFHLRZ4Y1QE5FTETXCWGT01LYDUANP3AGJQV1Y4T2IOSFC')
 
-print("Estas en: https://www.realtor.com/apartments/Miami-Beach_FL")
+print("Estas en: https://www.realtor.com/apartments/Miami-Lakes_FL")
 
-response = client.get("https://www.realtor.com/apartments/Miami-Beach_FL",
+
+response = client.get("https://www.realtor.com/apartments/Miami-Lakes_FL",
                       params={
                           'extract_rules':{
                               "button_list": {
@@ -22,7 +23,7 @@ response = client.get("https://www.realtor.com/apartments/Miami-Beach_FL",
                                   "output" : "@href"
                               },
                               "links":{
-                                    "selector": ".jsx-1534613990",
+                                    "selector": ".card-anchor",
                                     "type": "list",
                                     "output": "@href"
                                 }
@@ -31,8 +32,6 @@ response = client.get("https://www.realtor.com/apartments/Miami-Beach_FL",
                       )
 
 # string_inf = str(response.content)
-
-print(str(response.status_code))
 
 page = 1;
 
@@ -47,6 +46,7 @@ button_list = info_json["button_list"]
 href_list = info_json["href_list"]
 link_list = info_json["links"]
 
+
 all_links = all_links + link_list
 
 # for link in link_list:
@@ -57,7 +57,7 @@ all_links = all_links + link_list
 # print(link_list)
 
 tam = len(button_list)
-print(button_list)
+# print(button_list)
 
 if(button_list[tam-1] == "Next"):
     next_exist = True
@@ -72,13 +72,14 @@ if(num_pags > 19):
     more_than = True
     
 
-print(info_json["button_list"])
+# print(info_json["button_list"])
 print(response.status_code)
 
 #################################################################################################################################################
 
 if(next_exist):
     while(next_exist):
+        time.sleep(3)
         page = page + 1
         if(page == 10 and more_than):
             page = 20
@@ -152,13 +153,13 @@ if(next_exist):
             print("Error 500. Reintentando en " + BASE_URL + next_link)
             
 
-    # if(len(all_links) > 0):
-    #     print("Links Requested")
-    #     for link in all_links:
-    #         extract(BASE_URL+link)
-    #         time.sleep(5)
-    # else:
-    #     print("No links available")
+    if(len(all_links) > 0):
+        print("Links Requested")
+        for link in all_links:
+            extract(BASE_URL+link)
+            time.sleep(3)
+    else:
+        print("No links available")
    
 else:
     print("No hay siguiente")

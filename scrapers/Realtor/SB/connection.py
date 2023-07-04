@@ -19,3 +19,38 @@ def insert_into_db(property_id, list_id, list_date, stories, beds, studio, area,
             connection.rollback()
 
     cursor.close()
+    
+    
+    
+def insert_into_db_rent(property_id, list_id, list_update, address, latitude, longitude, year_built, stories, agent, office, beds, studio, useful_area, total_area, garage_spaces, description, bathrooms, full_baths, rent_price, unit_name, list_date):
+    
+    connection = psycopg2.connect(host=HOSTNAME, user=USERNAME, password=PASSWORD, dbname=DATABASE)
+    
+    cursor = connection.cursor()
+    try:
+        cursor.execute("INSERT INTO rentas_usa (property_id, list_id, last_update, address, latitude, longitude, year_built, stories, agent, office, beds, studio, useful_area, total_area, garage_spaces, description, bathrooms, full_baths, rent_price, unit_name, list_date) VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", (property_id, list_id, list_update, address, latitude, longitude, year_built, stories, agent, office, beds, studio, useful_area, total_area, garage_spaces, description, bathrooms, full_baths, rent_price, unit_name, list_date))
+        connection.commit()
+        print ('\nfinished INSERT INTO execution')
+        
+    except (Exception, Error) as error2:
+            print("\nexecute_sql() error:", error2)
+            connection.rollback()
+
+    cursor.close()
+    
+
+def insert_into_db_rent_units(property_id, list_id, list_update, address, latitude, longitude, year_built, stories, agent, office, unit_name, unit_id, beds, studio, total_area, description, bathrooms, full_baths, rent_price, list_date):
+    
+    connection = psycopg2.connect(host=HOSTNAME, user=USERNAME, password=PASSWORD, dbname=DATABASE)
+    
+    cursor = connection.cursor()
+    try:
+        cursor.execute("INSERT INTO rentas_usa (property_id, list_id, last_update, address, latitude, longitude, year_built, stories, agent, office, unit_name, unit_id, beds, studio, total_area, description, bathrooms, full_baths, rent_price, list_date) VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", (property_id, list_id, list_update, address, latitude, longitude, year_built, stories, agent, office, unit_name, unit_id, beds, studio, total_area, description, bathrooms, full_baths, rent_price, list_date))
+        connection.commit()
+        print ('\nfinished INSERT INTO execution')
+        
+    except (Exception, Error) as error2:
+            print("\nexecute_sql() error:", error2)
+            connection.rollback()
+
+    cursor.close()

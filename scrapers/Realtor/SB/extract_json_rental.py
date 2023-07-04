@@ -5,7 +5,7 @@ import connection
 
 def extract(link):
 
-    client = ScrapingBeeClient(api_key='PNTT41IH5YFQ8XVTGE6JB97H35SXIXW4KWX2D5C566PXW3FTB8Y0TIQXPZ92TC8164PMZRZHE81WHXOH')
+    client = ScrapingBeeClient(api_key='TFVQC5OR0YFSAZDPT1OFZMFO5BIIW72VRXXFHLRZ4Y1QE5FTETXCWGT01LYDUANP3AGJQV1Y4T2IOSFC')
     print("Extrayendo en: " + link)
 
     response = client.get(link,
@@ -14,6 +14,7 @@ def extract(link):
                                     'extract_rules':{
                                         "scripts": {
                                             "selector": "#__NEXT_DATA__",
+     
                                             "output" : "html"
                                         }
                                     }
@@ -44,12 +45,16 @@ def extract(link):
             # print(property_id)
         
         
-            
             ### Get the publication ID
             list_id = info_json["props"]["pageProps"]["property"]["listing_id"]
             if list_id == None:
                 print("Listing ID is not available")
+                
             
+            ### Get the list date
+            list_date = info_json["props"]["pageProps"]["property"]["list_date"]
+            if list_id == None:
+                print("Listing date is not available")
             
             
             ### Get last update
@@ -182,6 +187,9 @@ def extract(link):
                         ### Get prices of units
                         prices = unit["list_price"]
                         
+                        
+                        connection.insert_into_db_rent_units(property_id=property_id, list_id=list_id, list_update=last_update, address=address, latitude=latitude, longitude=longitude, year_built=year_built, stories=stories, agent=agent, office=office, unit_name=names, unit_id=unit_id, beds=beds_unit, studio=Studio, total_area=areas_unit, description=descriptions, bathrooms=baths, full_baths=full_baths_unit, rent_price=prices, list_date=list_date)
+                        
 
                     
         ########################################################
@@ -251,7 +259,7 @@ def extract(link):
                     print("Description not available")
                 
                 
-            connection.insert_into_db(property_id=property_id, list_id=list_id, stories=stories, beds=beds, studio=Studio, area=area, area_tot=area_tot, garage=garage, description=description, agent=agent, office=office, address=address, bathroom=bathroom, full_baths=full_bath, latitude=latitude, longitude=longitude, price=price, unit=unit, year_built=year_built)
+                connection.insert_into_db_rent(property_id=property_id, list_id=list_id, list_update=last_update, address=address, latitude=latitude, longitude=longitude, year_built=year_built, stories=stories, agent=agent, office=office, beds=beds, studio=Studio, useful_area=area, total_area=area_tot, garage_spaces=garage, description=description, bathrooms=bathroom, full_baths=full_bath, rent_price=price, unit_name=unit, list_date=list_date)
          
         
 
